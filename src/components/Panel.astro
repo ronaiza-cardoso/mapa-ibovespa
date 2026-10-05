@@ -20,11 +20,6 @@ const f = formatters(lang);
 const snapshot = await buildSnapshot(lang);
 const seo = buildSeo(lang, Astro.url, Astro.site, Astro.request.headers, snapshot);
 
-// A página é a mesma para todo mundo durante um minuto: deixar a CDN guardá-la
-// corta a maioria das idas às APIs públicas e ainda serve a versão anterior
-// enquanto revalida. O cache em memória do servidor some entre invocações
-// serverless, então esse cabeçalho é o que segura a carga lá.
-Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=300');
 ---
 
 <!doctype html>
