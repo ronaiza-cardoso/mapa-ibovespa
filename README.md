@@ -171,6 +171,16 @@ site tiver dono, acrescente o nó `Organization` ou `Person` em `src/lib/seo.ts`
 `<meta name="keywords">` está lá porque alguns buscadores menores ainda o leem;
 o Google ignora desde 2009.
 
+## Medição
+
+O painel carrega o **Vercel Web Analytics** (`@vercel/analytics/astro`), que
+conta visitas e páginas sem cookies e sem identificar o visitante. O script só
+entra nos ambientes da Vercel — em `npm run dev` ele não é injetado.
+
+Para os números aparecerem, o produto precisa estar ligado no projeto:
+**Vercel → mapa-ibovespa → Analytics → Enable**. Sem isso o script carrega e não
+registra nada.
+
 ## Decisões de cor
 
 A escala é **divergente**: dois polos opostos e cinza neutro no meio, três degraus

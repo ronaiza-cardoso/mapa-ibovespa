@@ -5,6 +5,7 @@ import Drawer from './Drawer.astro';
 import Legend from './Legend.astro';
 import TableView from './TableView.astro';
 import Topbar from './Topbar.astro';
+import Analytics from '@vercel/analytics/astro';
 import { buildSnapshot } from '../lib/snapshot';
 import { buildSeo } from '../lib/seo';
 import { dict, fill, type Locale } from '../i18n';
@@ -119,6 +120,10 @@ const seo = buildSeo(lang, Astro.url, Astro.site, Astro.request.headers, snapsho
 
     <TableView snapshot={snapshot} lang={lang} />
     <Drawer lang={lang} />
+
+    <!-- Analytics da Vercel: sem cookies e sem identificar o visitante; o
+         script só é injetado nos ambientes da Vercel, não em desenvolvimento. -->
+    <Analytics />
 
     <script type="application/json" id="snapshot-data" set:html={JSON.stringify(snapshot)}></script>
     <script type="application/json" id="i18n-data" set:html={JSON.stringify(t)}></script>
