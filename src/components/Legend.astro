@@ -1,0 +1,25 @@
+---
+import { dict, type Locale } from '../i18n';
+
+interface Props { lang: Locale }
+const { lang } = Astro.props;
+const t = dict(lang);
+
+/** Legenda da escala divergente: 3 degraus por braço + cinza neutro no meio. */
+const bands = ['down-3', 'down-2', 'down-1', 'neutral', 'up-1', 'up-2', 'up-3'] as const;
+---
+
+<div class="legend">
+  <span>{t.legendColor}</span>
+  <span class="legend__ends">
+    <span>{t.legendLow}</span>
+    <span class="legend__scale" role="img" aria-label={t.legendScaleAria}>
+      {bands.map((band, i) => (
+        <span class="legend__swatch" style={`background:var(--div-${band})`} title={t.bands[i]}></span>
+      ))}
+    </span>
+    <span>{t.legendHigh}</span>
+  </span>
+  <span>{t.legendArea} <span data-role="legend-size">{t.sizeWeight.toLowerCase()}</span></span>
+  <span>{t.legendNote}</span>
+</div>

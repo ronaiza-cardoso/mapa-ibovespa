@@ -1,0 +1,77 @@
+---
+import { dict, type Locale } from '../i18n';
+
+interface Props { lang: Locale }
+const { lang } = Astro.props;
+const t = dict(lang);
+
+/** Rótulo longo para telas largas, curto para o celular. */
+const sizes = [
+  ['weight', t.sizeWeight, t.sizeWeightShort],
+  ['marketCap', t.sizeMarketCap, t.sizeMarketCapShort],
+  ['turnover', t.sizeTurnover, t.sizeTurnoverShort],
+] as const;
+---
+
+<div class="controls" role="group" aria-label={t.controlsAria}>
+  <div class="control">
+    <span class="control__label" id="lbl-size">{t.size}</span>
+    <div class="seg" role="group" aria-labelledby="lbl-size" data-role="size-group">
+      {sizes.map(([value, label, short], i) => (
+        <button type="button" data-size-by={value} aria-pressed={i === 0 ? 'true' : 'false'}>
+          <span class="label-long">{label}</span><span class="label-short">{short}</span>
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <div class="control">
+    <label class="control__label" for="group-by">{t.group}</label>
+    <select id="group-by" data-role="group-by">
+      <option value="sector" selected>{t.groupSector}</option>
+      <option value="subsector">{t.groupSubsector}</option>
+      <option value="none">{t.groupNone}</option>
+    </select>
+  </div>
+
+  <div class="control control--search">
+    <label class="control__label" for="search">{t.search}</label>
+    <input id="search" type="search" placeholder={t.searchPlaceholder} data-role="search"
+      autocomplete="off" spellcheck="false" />
+  </div>
+
+  <div class="control spacer">
+    <button type="button" class="ghost" data-role="view-toggle" aria-pressed="false"
+      aria-controls="tabela">{t.showTable}</button>
+    <button type="button" class="ghost" data-role="refresh">{t.refresh}</button>
+  </div>
+
+  <details class="appearance">
+    <summary class="ghost">{t.appearance}</summary>
+    <div class="appearance__body">
+      <div class="control">
+        <span class="control__label" id="lbl-palette">{t.colors}</span>
+        <div class="seg" role="group" aria-labelledby="lbl-palette" data-role="palette-group">
+          <button type="button" data-palette="accessible" aria-pressed="true"
+            title={t.colorAccessibleHint}>{t.colorAccessible}</button>
+          <button type="button" data-palette="classic" aria-pressed="false"
+            title={t.colorClassicHint}>{t.colorClassic}</button>
+        </div>
+      </div>
+
+      <div class="control">
+        <span class="control__label" id="lbl-theme">{t.theme}</span>
+        <div class="seg" role="group" aria-labelledby="lbl-theme" data-role="theme-group">
+          <button type="button" data-theme="auto" aria-pressed="true">{t.themeAuto}</button>
+          <button type="button" data-theme="light" aria-pressed="false">{t.themeLight}</button>
+          <button type="button" data-theme="dark" aria-pressed="false">{t.themeDark}</button>
+        </div>
+      </div>
+
+      <label class="toggle">
+        <input type="checkbox" data-role="texture" />
+        {t.texture}
+      </label>
+    </div>
+  </details>
+</div>

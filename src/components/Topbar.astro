@@ -1,0 +1,73 @@
+---
+import { dict, fill, LOCALE_PATH, LOCALES, type Locale } from '../i18n';
+import { formatters } from '../lib/format';
+import type { Snapshot } from '../lib/types';
+
+interface Props { snapshot: Snapshot; lang: Locale }
+const { snapshot, lang } = Astro.props;
+const t = dict(lang);
+const f = formatters(lang);
+const totals = snapshot.totals;
+// Com a cotação oficial em mãos, o número grande é o índice; a variação
+// ponderada pelos pesos fica de reserva para quando o Yahoo não responder.
+const index = snapshot.index;
+const w = index?.changePct ?? totals.weightedChangePct;
+const trend = w == null ? '' : w > 0 ? 'up' : w < 0 ? 'down' : '';
+const total = Math.max(1, totals.up + totals.down + totals.flat);
+const pct = (n: number) => `${(n / total) * 100}%`;
+---
+
+<header class="topbar">
+  <div class="topbar__brand">
+    <h1 class="topbar__title">{t.heading}</h1>
+    <p class="topbar__sub">
+      {fill(t.subtitle, {
+        n: totals.members,
+        portfolio: f.date(snapshot.portfolioDate),
+        fetched: f.dateTime(snapshot.fetchedAt),
+      })}
+    </p>
+  </div>
+
+  <!-- um número é um número: ladrilho de estatística, não gráfico -->
+  <div class="stat">
+    <span class="stat__label" data-role="headline-label">{index ? t.indexLabel : t.weighted}</span>
+    <strong class={`stat__value ${trend}`} data-role="weighted">{f.pct(w)}</strong>
+    <span class="stat__note" data-role="headline-note">
+      {index
+        ? fill(t.indexNote, {
+            points: f.int(index.price),
+            previous: f.int(index.previousClose),
+          })
+        : t.weightedNote}
+    </span>
+  </div>
+
+  <div class="stat">
+    <span class="stat__label">{t.breadth}</span>
+    <div class="breadth">
+      <div class="breadth__bar" role="img"
+        aria-label={fill(t.breadthAria, { up: totals.up, flat: totals.flat, down: totals.down })}>
+        <div class="breadth__seg--up" style={`width:${pct(totals.up)}`} data-role="breadth-up"></div>
+        <div class="breadth__seg--flat" style={`width:${pct(totals.flat)}`} data-role="breadth-flat"></div>
+        <div class="breadth__seg--down" style={`width:${pct(totals.down)}`} data-role="breadth-down"></div>
+      </div>
+      <span class="stat__value stat__value--sm">
+        <span class="up" data-role="count-up">{totals.up}</span>
+        <span class="stat__note">/</span>
+        <span class="down" data-role="count-down">{totals.down}</span>
+      </span>
+    </div>
+    <span class="stat__note">{t.breadthNote}</span>
+  </div>
+
+  <nav class="langs" aria-label="Idioma / Language">
+    {LOCALES.map((code) => (
+      <a href={LOCALE_PATH[code]} hreflang={code} lang={code}
+        aria-current={code === lang ? 'page' : undefined}
+        title={code === lang ? undefined : dict(code).switchTo}>
+        {code === 'pt-BR' ? 'PT' : 'EN'}
+      </a>
+    ))}
+  </nav>
+</header>

@@ -1,0 +1,58 @@
+---
+import { RANGES } from '../lib/detail';
+import { dict, type Locale } from '../i18n';
+
+interface Props { lang: Locale }
+const { lang } = Astro.props;
+const t = dict(lang);
+---
+
+<div class="drawer__backdrop" data-role="backdrop" data-open="false"></div>
+
+<aside class="drawer" data-role="drawer" data-open="false" aria-labelledby="drawer-title"
+  aria-hidden="true" tabindex="-1">
+  <div class="drawer__head">
+    <div>
+      <h2 class="drawer__title" id="drawer-title" data-role="d-ticker">—</h2>
+      <p class="drawer__name" data-role="d-name"></p>
+    </div>
+    <button type="button" class="ghost drawer__close" data-role="drawer-close"
+      aria-label={`${t.close} (Esc)`}>{t.close}</button>
+  </div>
+
+  <div class="drawer__body">
+    <div class="grid-stats" data-role="d-stats"></div>
+    <div data-role="d-range"></div>
+    <div data-role="d-returns"></div>
+
+    <div>
+      <div class="controls" style="padding:6px 8px">
+        <div class="control">
+          <span class="control__label" id="lbl-range">{t.period}</span>
+          <div class="seg" role="group" aria-labelledby="lbl-range" data-role="range-group">
+            {RANGES.map((r) => (
+              <button type="button" data-range={r} aria-pressed={r === '3mo' ? 'true' : 'false'}>
+                {t.ranges[r]}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+      <figure style="margin:10px 0 0">
+        <figcaption class="stat__label" data-role="d-chart-title"></figcaption>
+        <div class="chart" data-role="d-chart">
+          <div class="tooltip" data-role="d-tip" data-open="false" role="status" aria-live="polite"></div>
+        </div>
+      </figure>
+      <p class="stat__note" data-role="d-chart-note"></p>
+    </div>
+
+    <div class="table-wrap" style="max-height:200px">
+      <table>
+        <caption>{t.seriesCaption}</caption>
+        <thead><tr><th scope="col">{t.seriesDate}</th><th scope="col">{t.seriesClose}</th></tr></thead>
+        <tbody data-role="d-series"></tbody>
+      </table>
+    </div>
+  </div>
+</aside>

@@ -1,0 +1,17 @@
+{
+  "name": "Mapa do Ibovespa",
+  "short_name": "Ibovespa",
+  "description": "Mapa interativo das ações que compõem o Ibovespa, com dados públicos da B3.",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0d0d0d",
+  "theme_color": "#1a1a19",
+  "categories": ["finance", "business", "news"],
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

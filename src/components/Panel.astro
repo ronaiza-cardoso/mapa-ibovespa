@@ -1,0 +1,134 @@
+---
+import '../styles/global.css';
+import Controls from './Controls.astro';
+import Drawer from './Drawer.astro';
+import Legend from './Legend.astro';
+import TableView from './TableView.astro';
+import Topbar from './Topbar.astro';
+import { buildSnapshot } from '../lib/snapshot';
+import { buildSeo } from '../lib/seo';
+import { dict, fill, type Locale } from '../i18n';
+import { formatters } from '../lib/format';
+
+interface Props { lang: Locale }
+const { lang } = Astro.props;
+const t = dict(lang);
+const f = formatters(lang);
+
+// O retrato é montado no servidor: a primeira pintura já vem com dados,
+// e o cliente só reconsulta /api/snapshot.json nas atualizações seguintes.
+const snapshot = await buildSnapshot(lang);
+const seo = buildSeo(lang, Astro.url, Astro.site, Astro.request.headers, snapshot);
+
+// A página é a mesma para todo mundo durante um minuto: deixar a CDN guardá-la
+// corta a maioria das idas às APIs públicas e ainda serve a versão anterior
+// enquanto revalida. O cache em memória do servidor some entre invocações
+// serverless, então esse cabeçalho é o que segura a carga lá.
+Astro.response.headers.set('cache-control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=300');
+---
+
+<!doctype html>
+<html lang={t.htmlLang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{t.title}</title>
+    <meta name="description" content={t.description} />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#fcfcfb" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1a1a19" media="(prefers-color-scheme: dark)" />
+
+    <!-- Descoberta: canônica, versões por idioma e regras de indexação. -->
+    <link rel="canonical" href={seo.canonical} />
+    {seo.alternates.map((alt) => (
+      <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />
+    ))}
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="googlebot" content="index, follow" />
+    <meta name="keywords" content={t.keywords.join(', ')} />
+
+    <!-- Cartão de compartilhamento -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={t.siteName} />
+    <meta property="og:title" content={t.title} />
+    <meta property="og:description" content={t.description} />
+    <meta property="og:url" content={seo.canonical} />
+    <meta property="og:image" content={seo.ogImage} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={t.ogImageAlt} />
+    <meta property="og:locale" content={seo.ogLocale} />
+    {seo.ogLocaleAlternates.map((alt) => <meta property="og:locale:alternate" content={alt} />)}
+    <meta property="og:updated_time" content={snapshot.fetchedAt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={t.title} />
+    <meta name="twitter:description" content={t.description} />
+    <meta name="twitter:image" content={seo.ogImage} />
+    <meta name="twitter:image:alt" content={t.ogImageAlt} />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icon-180.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <!-- Os dados da página também servidos como JSON, para quem quiser a fonte. -->
+    <link rel="alternate" type="application/json" title={t.datasetName}
+      href={`/api/snapshot.json?lang=${lang}`} />
+    <script type="application/ld+json" is:inline set:html={seo.jsonLd}></script>
+    <script is:inline>
+      // Preferências antes da primeira pintura, para não piscar o tema errado.
+      try {
+        const p = JSON.parse(localStorage.getItem('ibov-prefs') || '{}');
+        const r = document.documentElement;
+        if (p.theme && p.theme !== 'auto') r.dataset.theme = p.theme;
+        if (p.palette === 'classic') r.dataset.palette = 'classic';
+        if (p.texture) r.dataset.texture = 'on';
+      } catch {}
+    </script>
+  </head>
+
+  <body>
+    <a class="skip-link" href="#tabela">{t.skipToTable}</a>
+
+    <div class="app">
+      <Topbar snapshot={snapshot} lang={lang} />
+      <Controls lang={lang} />
+
+      <main class="stage" id="mapa" aria-label={t.mapAria}>
+        <nav class="crumbs" data-role="crumbs" aria-label={t.crumbsAria}>
+          <button type="button" data-crumb="root" aria-current="true">{t.root}</button>
+          <span class="crumbs__hint">{t.hintRoot}</span>
+        </nav>
+        <div class="map" data-role="map" data-pending="false"></div>
+        <div class="sr-only" role="status" aria-live="polite" data-role="live"></div>
+      </main>
+
+      <footer class="footer">
+        <Legend lang={lang} />
+        {snapshot.degraded && (
+          <p class="notice">
+            <span aria-hidden="true">⚠</span>
+            <span>{fill(t.degraded, { when: f.dateTime(snapshot.fetchedAt) })}</span>
+          </p>
+        )}
+        <ul>
+          {snapshot.sources.map((s) => (
+            <li>
+              <span class={s.ok ? 'dot' : 'dot dot--bad'} aria-hidden="true"></span>
+              <a href={s.url} target="_blank" rel="noopener noreferrer">{s.name}</a> — {s.detail}
+            </li>
+          ))}
+        </ul>
+        <p>{t.disclaimer}</p>
+      </footer>
+    </div>
+
+    <TableView snapshot={snapshot} lang={lang} />
+    <Drawer lang={lang} />
+
+    <script type="application/json" id="snapshot-data" set:html={JSON.stringify(snapshot)}></script>
+    <script type="application/json" id="i18n-data" set:html={JSON.stringify(t)}></script>
+    <script>
+      import '../scripts/app';
+    </script>
+  </body>
+</html>

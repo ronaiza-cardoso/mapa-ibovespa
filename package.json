@@ -1,0 +1,28 @@
+{
+  "name": "ibov-map",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Painel interativo em treemap das acoes que compoem o Ibovespa, com dados publicos",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "node ./dist/server/entry.mjs",
+    "snapshot": "node scripts/refresh-fallback.mjs",
+    "images": "node scripts/make-og.mjs",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/node": "^9.1.3",
+    "@astrojs/vercel": "^9.0.5",
+    "astro": "^5.5.5",
+    "d3-hierarchy": "^3.1.2"
+  },
+  "devDependencies": {
+    "@types/d3-hierarchy": "^3.1.7",
+    "@types/node": "^22.20.5",
+    "sharp": "^0.35.5",
+    "typescript": "^5.8.2"
+  }
+}

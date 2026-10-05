@@ -1,0 +1,49 @@
+---
+import { dict, fill, type Locale } from '../i18n';
+import { formatters } from '../lib/format';
+import type { Snapshot } from '../lib/types';
+
+interface Props { snapshot: Snapshot; lang: Locale }
+const { snapshot, lang } = Astro.props;
+const t = dict(lang);
+const f = formatters(lang);
+---
+
+<!-- Gêmeo tabular do mapa: todo valor do gráfico é legível aqui, sem depender
+     de cor nem de hover. Fica visível quando o JavaScript não roda. -->
+<section class="panel" id="tabela" data-role="table-view" aria-labelledby="tabela-titulo">
+  <h2 class="panel__title" id="tabela-titulo">{t.tableTitle}</h2>
+  <div class="table-wrap">
+    <table>
+      <caption>{fill(t.tableCaption, { n: snapshot.totals.members })}</caption>
+      <thead>
+        <tr>
+          <th scope="col">{t.thTicker}</th>
+          <th scope="col">{t.thAsset}</th>
+          <th scope="col">{t.thSector}</th>
+          <th scope="col">{t.thWeight}</th>
+          <th scope="col">{t.thPrice}</th>
+          <th scope="col">{t.thChange}</th>
+          <th scope="col">{t.thMarketCap}</th>
+          <th scope="col">{t.thVolume}</th>
+        </tr>
+      </thead>
+      <tbody data-role="table-body">
+        {snapshot.stocks.map((s) => (
+          <tr>
+            <th scope="row" class="cell-ticker">{s.ticker}</th>
+            <td>{s.name}</td>
+            <td>{s.sector}</td>
+            <td>{f.weight(s.weight)}</td>
+            <td>{f.price(s.price)}</td>
+            <td class={s.changePct == null ? '' : s.changePct > 0 ? 'up' : s.changePct < 0 ? 'down' : ''}>
+              {f.pct(s.changePct)}
+            </td>
+            <td>{f.compact(s.marketCap)}</td>
+            <td>{f.int(s.volume)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
