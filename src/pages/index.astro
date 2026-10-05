@@ -7,10 +7,17 @@ export const prerender = false;
 // guardá-la: corta a maioria das idas às APIs públicas e ainda serve a versão
 // anterior enquanto revalida. Precisa ficar aqui, no frontmatter da página —
 // num componente o Astro já começou a transmitir o HTML e o cabeçalho se perde.
-Astro.response.headers.set(
-  'cache-control',
-  'public, max-age=0, s-maxage=60, stale-while-revalidate=300'
-);
+//
+// Só em produção: em desenvolvimento o stale-while-revalidate faz o navegador
+// reusar a página antiga por minutos, e com ela os hashes de módulo que o Vite
+// já invalidou — o que aparece como "504 Outdated Optimize Dep" depois de cada
+// reinício do servidor.
+if (import.meta.env.PROD) {
+  Astro.response.headers.set(
+    'cache-control',
+    'public, max-age=0, s-maxage=60, stale-while-revalidate=300'
+  );
+}
 ---
 
 <Panel lang="pt-BR" />
